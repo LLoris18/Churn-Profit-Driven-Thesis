@@ -2,7 +2,10 @@
 
 Questo file raccoglie il contesto del progetto di tesi. Va letto all'inizio di ogni sessione,
 in chat con Claude o con Claude Code, e aggiornato quando si prende una decisione.
-Ultimo aggiornamento: 2026-10-22.
+Ultimo aggiornamento: 2026-11-11.
+
+**Documento di riferimento:** la pagina Notion "🎓 Tesi – Documento unico" (vedi §16).
+Questo file è la versione sintetica per Claude Code; se i due divergono, vale Notion.
 
 ---
 
@@ -31,8 +34,15 @@ azione** (SHAP + LLM, uplift modeling).
 - 2026-10-13: il professore accetta il tema. Chiede: titolo provvisorio, abstract breve
   (obiettivo + metodologia), indice provvisorio. Ing. Foggetti in copia come co-supervisore.
 - 2026-10-22: preparati titolo/abstract/indice, doc di teoria, doc di risorse, questo file.
-- **Prossimo passo:** inviare titolo, abstract e indice a Panniello e Foggetti; iniziare la
-  fase 1 della roadmap (Python e pandas sul dataset Telco).
+- 2026-10-28: relatore e correlatore approvano tema e dataset; consigliano di partire dalla
+  raccolta dei dati.
+- 2026-11-05: `download_data.py` con fonti di riserva per Hillstrom ed estrazione automatica
+  degli zip; token Kaggle nuovo formato (`~/.kaggle/access_token` o `KAGGLE_API_TOKEN`).
+- 2026-11-11: **Fase 0 (raccolta dati) chiusa.** Tutti i dataset scaricati e controllati con
+  `audit_data.py`; tutti i requisiti delle RQ sono soddisfatti (dettagli in §8).
+- **Prossimo passo:** rilanciare `download_data.py` (versione 5 nov) per aggiornare il manifest,
+  backup di `data/raw/`, commit, bozza del §4.1 Dataset, breve mail ai relatori, poi
+  notebook `01_eda` sul Telco.
 
 ## 4. Vincoli (non negoziabili)
 
@@ -95,15 +105,36 @@ accettazione γ ~ Beta(6, 14). Il churner va codificato come 1.
 
 ## 8. Dataset
 
-| Dataset | Ruolo | Note |
-| --- | --- | --- |
-| IBM Telco Customer Churn (Kaggle, blastchar) | Caso principale | 7.043 clienti, colonna `tenure` per la survival |
-| Iranian Churn (UCI 563) | Controllo | 3.150 clienti, 495 churner |
-| KKBox Churn (Kaggle competition) | Estensione temporale | File pesanti: campionare, usare DuckDB/polars |
-| Cell2Cell (Kaggle) | Alternativa a KKBox | Da verificare |
-| Hillstrom MineThatData (`sklift.datasets.fetch_hillstrom`) | Uplift | Esperimento randomizzato, 64.000 clienti |
+Dati controllati l'11/11/2026 (`results/data_audit.md`, `results/data_manifest.json`).
 
-Licenze di Telco, KKBox e Cell2Cell da verificare prima della consegna.
+| Dataset | Ruolo | File | Righe × colonne | Target / esito | Durata |
+| --- | --- | --- | --- | --- | --- |
+| IBM Telco (Kaggle, blastchar) | Caso principale | `WA_Fn-UseC_-Telco-Customer-Churn.csv` | 7.043 × 21 | `Churn` Yes 26,5% | `tenure` 0-72 mesi, mediana 29 |
+| Iranian Churn (UCI 563) | Controllo, piccolo | `Customer Churn.csv` | 3.150 × 14 (300 duplicati) | `Churn` 1 = 15,7% | `Subscription  Length` 3-47, mediana 35 |
+| Cell2Cell (Kaggle, jpacse) | Controllo, il più grande | `cell2celltrain.csv` | 51.047 × 58 | `Churn` Yes 28,8% | `MonthsInService` 6-61, mediana 16 |
+| Cell2Cell holdout | **Non usato** | `cell2cellholdout.csv` | 20.000 × 58 | `Churn` vuoto in tutte le righe | — |
+| Hillstrom MineThatData | Uplift | `hillstorm_no_indices.csv` (da .csv.gz) | 64.000 × 12 | `segment` 3 bracci ~33%; `visit` 14,7%, `conversion` 0,9%, `spend` media 1,05 | — |
+| Criteo Uplift | Eventuale test di scala | non scaricato | ~14 M | CC BY-NC-SA 4.0 | — |
+
+KKBox escluso: la licenza della competizione non ne consente più l'uso.
+
+**Regole di preparazione decise (2026-11-11):**
+
+- Telco: `TotalCharges` ha celle con solo spazi (clienti con `tenure` = 0) → convertire in numero,
+  imputare 0 o eliminare le righe (decisione da documentare). `customerID` non è una feature.
+- Iranian: eliminare i 300 duplicati **prima** dello split; verificare `Status` per possibile leakage;
+  `Age` e `Age Group` sono ridondanti (tenerne una). Non adatto alla survival (durata troncata).
+  `Customer Value` utilizzabile come CLV per cliente nell'EMPC (idea da valutare).
+- Cell2Cell: usare solo il train; valori mancanti in 14 colonne (AgeHH1/2 909, PercChange* 367,
+  MonthlyRevenue 156) → imputazione dentro la Pipeline; `RetentionCalls`,
+  `RetentionOffersAccepted`, `MadeCallToRetentionTeam` da verificare per leakage;
+  `MonthsInService` parte da 6 (troncamento a sinistra) → survival solo approssimata.
+- Hillstrom: i 6.562 duplicati sono attesi (poche feature categoriche) e si tengono;
+  esito principale `visit`; confronto principale Womens E-Mail vs No E-Mail.
+- Survival (RQ4): Telco principale, Cell2Cell come controllo approssimato, non Iranian.
+
+Licenze di Telco e Cell2Cell da verificare prima della consegna.
+Struttura completa e dizionario delle variabili: pagina Notion "Dataset".
 
 ## 9. Struttura del repository (proposta)
 
@@ -164,6 +195,14 @@ churn-profit-thesis/
 | 2026-10-09 | Nessun vincolo di laurea ad aprile: tempo stimato circa 8 mesi | Qualità della tesi prioritaria |
 | 2026-10-09 | LLM: Claude via API per gli esperimenti + replica con modello open locale | Riproducibilità |
 | 2026-10-22 | Proposta al relatore in due versioni: A completa (chi, quando, quale azione); B ridotta (chi + azione con SHAP/LLM e simulazione; survival e uplift come sviluppi futuri) | Avere un piano di riserva se il tempo non basta |
+| 2026-10-23 | Dataset: Telco (principale), Iranian e Cell2Cell (controllo), Hillstrom (uplift), Criteo (eventuale test di scala); KKBox escluso | Licenza KKBox scaduta |
+| 2026-10-28 | Relatori approvano; si parte dalla raccolta dati | Indicazione del relatore |
+| 2026-11-05 | Notion come documento unico di riferimento | I doc separati non si esportavano insieme |
+| 2026-11-05 | Token Kaggle in `~/.kaggle/access_token` o `KAGGLE_API_TOKEN`, mai nel repo | Sicurezza |
+| 2026-11-11 | Cell2Cell: solo `cell2celltrain.csv` | L'holdout non ha etichette |
+| 2026-11-11 | Iranian: rimozione dei 300 duplicati prima dello split | Evitare che lo stesso cliente finisca in train e test |
+| 2026-11-11 | Hillstrom: duplicati tenuti, esito principale `visit` | Duplicati attesi; `conversion` troppo rara (0,9%) |
+| 2026-11-11 | Survival su Telco (e Cell2Cell approssimata), non su Iranian | Qualità della variabile di durata |
 
 ## 14. Domande aperte per il relatore
 
@@ -194,11 +233,13 @@ churn-profit-thesis/
 - Provost, Fawcett (2013). Data Science for Business, cap. 7-8.
 - Verbeke, Baesens, Bravo (2017). Profit-Driven Business Analytics. Wiley.
 
-## 16. Documenti collegati (claude.ai)
+## 16. Documenti collegati
 
-- Proposta di tesi (titolo, abstract, indice): https://claude.ai/artifact/HW21xDirnjNCPHkr9nJbYe
-- Teoria per la tesi: https://claude.ai/artifact/3ez5Wdg6zkHKwEvQrCq4Qi
-- Risorse (dataset, documentazione, scrittura): https://claude.ai/artifact/3yGi1D117qGkArRhyoLpaL
-- Roadmap della tesi (da oggi alla consegna): https://claude.ai/artifact/5iapjQCTTsVRibtvF3ATRR
-- Preparazione call (prima versione della roadmap): https://claude.ai/code/artifact/4549ccfe-cbf3-424d-b4b3-44660d5e4d64
+**Riferimento unico (Notion):** "🎓 Tesi – Documento unico"
+https://app.notion.com/p/407c1b5fc284814b93eefd588c143940
+Sottopagine: Proposta, Roadmap, Teoria, Letteratura, Risorse, Dataset.
+
+I vecchi documenti su claude.ai (Proposta, Teoria, Risorse, Roadmap, Preparazione call)
+sono superati e non vengono più aggiornati.
+
 - Materiale del corso: Sbobinature MEBI 2018 (PDF, 133 pagine)

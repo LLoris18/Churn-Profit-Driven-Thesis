@@ -1,0 +1,59 @@
+{
+  "telco": {
+    "role": "Dataset principale: modelli, EMPC, survival analysis",
+    "source_page": "https://www.kaggle.com/datasets/blastchar/telco-customer-churn",
+    "source": "blastchar/telco-customer-churn",
+    "downloaded_at": "2026-11-05T11:33:34+00:00",
+    "files": [
+      {
+        "path": "telco\\WA_Fn-UseC_-Telco-Customer-Churn.csv",
+        "bytes": 977501,
+        "sha256": "88be4b93fbe0cc83421af1c503794c97c342eca914c1576db7c276e61d61358a"
+      }
+    ]
+  },
+  "cell2cell": {
+    "role": "Dataset di controllo, il piu' grande",
+    "source_page": "https://www.kaggle.com/datasets/jpacse/datasets-for-churn-telecom",
+    "source": "jpacse/datasets-for-churn-telecom",
+    "downloaded_at": "2026-11-05T11:33:34+00:00",
+    "files": [
+      {
+        "path": "cell2cell\\cell2cellholdout.csv",
+        "bytes": 5193391,
+        "sha256": "f47654035b3651fae82af63c04d70093b9d22d49e7f3a496161738fa0cf6fb4b"
+      },
+      {
+        "path": "cell2cell\\cell2celltrain.csv",
+        "bytes": 13365153,
+        "sha256": "3f6b8ff0b8e8f5975aa0de9f1f54967e6c8cb867a9bec6cbb64f4c8990f9a645"
+      }
+    ]
+  },
+  "iranian": {
+    "role": "Dataset di controllo, piccolo",
+    "source_page": "https://archive.ics.uci.edu/dataset/563/iranian+churn+dataset",
+    "source": "https://archive.ics.uci.edu/static/public/563/iranian+churn+dataset.zip",
+    "downloaded_at": "2026-11-11T13:52:33+00:00",
+    "files": [
+      {
+        "path": "iranian\\Customer Churn.csv",
+        "bytes": 131728,
+        "sha256": "90d5fb6bd1630cd4de4b4d28fcf8b4cb92a8f6ab7484605b0799d47386f7dbe1"
+      }
+    ]
+  },
+  "hillstrom": {
+    "role": "Esperimento randomizzato per l'uplift modeling",
+    "source_page": "https://www.uplift-modeling.com/en/latest/api/datasets/fetch_hillstrom.html",
+    "source": "https://hillstorm1.s3.us-east-2.amazonaws.com/hillstorm_no_indices.csv.gz",
+    "downloaded_at": "2026-11-11T13:52:34+00:00",
+    "files": [
+      {
+        "path": "hillstrom\\hillstorm_no_indices.csv",
+        "bytes": 4028958,
+        "sha256": "00a6a868e05a9ffe7382da51629f6d6dce88c5acfc945e79d314ebc78fd3a2c0"
+      }
+    ]
+  }
+}
